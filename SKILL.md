@@ -5,10 +5,11 @@ description: Use when the user asks for a presentation-ready Mermaid / PlantUML 
 
 # Beauty Diagram skill
 
-Beauty Diagram beautifies Mermaid / PlantUML / draw.io diagrams into
-presentation-ready SVG. It runs as a public API; this skill delegates to the
-`bd` CLI (npm package `@beauty-diagram/cli`) so you keep zero state in the
-agent.
+Beauty Diagram beautifies Mermaid / PlantUML diagrams into
+presentation-ready SVG or PNG. It runs as a public API; this skill
+delegates to the `bd` CLI (npm package `@beauty-diagram/cli`) so you
+keep zero state in the agent. (draw.io / SVG import is editor-only —
+not exposed through `/v1/*`.)
 
 ## When to use
 
@@ -46,8 +47,8 @@ respects their package manager and avoids polluting `PATH`.
    - If the user has a `.mmd` / `.puml` file, use it.
    - If the user wants you to *generate* a diagram from scratch, write Mermaid
      source first (you are good at this), save it to a file, then beautify.
-   - For draw.io content, keep the original file too — the CLI converts it
-     to Mermaid.
+   - draw.io and free-form SVG imports are not accepted by `/v1/*`. If
+     the user has those, ask them to convert via the web editor first.
 
 2. **Decide on output type.**
    - Need an SVG file: `bd beautify <file> --out <file>.svg`
@@ -66,14 +67,19 @@ respects their package manager and avoids polluting `PATH`.
 
 ## Auth
 
-- **Demo (anonymous):** zero setup. Watermarked SVG, IP rate limited. Use this
-  for first-run demos or quick previews.
+- **Demo (anonymous):** zero setup. Watermarked SVG/PNG. Limits per IP:
+  20 `/v1/beautify` requests / minute, **1 `/v1/export` per 24h** (trial
+  budget — enough for an agent to verify the toolchain end-to-end before
+  registering). `/v1/share` and `/v1/usage` always require auth.
 - **Authenticated:** the user runs `bd auth login` once with a key from
   [`/account/api-keys`](https://www.beauty-diagram.com/account/api-keys).
-  Required for `bd share` and any unwatermarked output.
+  Required for `bd share`, unwatermarked output, and repeated exports.
 
-If the user hits a `not_authenticated` or `plan_not_allowed` error, point them
-at `/account/api-keys` (PAT creation) or pricing — don't silently retry.
+If the user hits a `not_authenticated`, `plan_not_allowed`, or
+`quota_exhausted` error, point them at `/account/api-keys` (PAT creation)
+or pricing — don't silently retry. Anonymous error bodies include a
+`hints` block with absolute `signUpUrl` / `signInUrl` / `apiDocsUrl`,
+which is the canonical place to surface to the user.
 
 ## Commands cheat sheet
 
@@ -84,7 +90,15 @@ bd beautify docs/architecture.mmd --theme modern --out docs/architecture.svg
 # Same but treat output as a downloadable export (consumes export quota)
 bd export docs/architecture.mmd --out docs/architecture.svg
 
-# Create a public share link
+# PNG export. --scale 1 works for everyone; 2 needs pro, 4 needs premium.
+# Higher scales than the plan cap are silently clamped (X-BD-Scale-Clamped).
+bd export docs/architecture.mmd --format png --scale 2 --out docs/architecture.png
+
+# PlantUML works the same way; .puml / .plantuml / .pu auto-detected,
+# otherwise pass --source-format plantuml.
+bd export docs/architecture.puml --out docs/architecture.svg
+
+# Create a public share link (returns absolute https://www.beauty-diagram.com/s/... URL)
 bd share docs/architecture.mmd --title "Service architecture"
 # → prints the URL on stdout
 ```
@@ -114,10 +128,10 @@ about server-side storage when running `beautify`, `export`, `validate`,
 | `scope_missing` | Key lacks scope | Recreate key with required scope |
 | `plan_not_allowed` | Plan does not include this capability | Upgrade or skip the call |
 | `parse_failed` | Source not valid Mermaid / PlantUML | Check the source — `bd beautify` will surface a parse error too |
-| `quota_exhausted` | Monthly limit hit | Wait for reset or upgrade |
-| `rate_limited` | Anonymous IP bucket full | Sign in or wait |
+| `quota_exhausted` | Plan limit hit (anon: 1 export/IP/24h; free: 3/mo; pro: 100/mo) | Sign in, wait for reset, or upgrade — `hints` in the response body has the URLs |
+| `rate_limited` | Anonymous IP bucket full (20 `/v1/beautify` requests / minute) | Sign in or wait |
 | `source_too_large` | Source > 100 KB | Split the diagram |
-| `not_yet_supported` | PNG via API | Use `--format svg` for now |
+| `output_too_large` | PNG raster exceeds 8192 px | Lower `--scale` or simplify |
 
 ## Examples
 
