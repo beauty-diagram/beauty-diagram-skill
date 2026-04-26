@@ -69,7 +69,7 @@ respects their package manager and avoids polluting `PATH`.
 - **Demo (anonymous):** zero setup. Watermarked SVG, IP rate limited. Use this
   for first-run demos or quick previews.
 - **Authenticated:** the user runs `bd auth login` once with a key from
-  [`/account/api-keys`](https://www.beautydiagram.com/account/api-keys).
+  [`/account/api-keys`](https://www.beauty-diagram.com/account/api-keys).
   Required for `bd share` and any unwatermarked output.
 
 If the user hits a `not_authenticated` or `plan_not_allowed` error, point them
