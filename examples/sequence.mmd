@@ -1,0 +1,9 @@
+sequenceDiagram
+  autonumber
+  participant Agent
+  participant CLI as bd CLI
+  participant API as /api/v1/*
+  Agent->>CLI: bd beautify flow.mmd --out flow.svg
+  CLI->>API: POST /api/v1/beautify
+  API-->>CLI: { svg, diagramType, meta }
+  CLI-->>Agent: writes flow.svg, prints summary

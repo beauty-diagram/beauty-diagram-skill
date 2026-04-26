@@ -1,0 +1,7 @@
+flowchart TD
+  Start((Open editor)) --> Detect{Source present?}
+  Detect -->|Yes| Beautify[Beautify SVG]
+  Detect -->|No| Generate[Generate from prompt]
+  Generate --> Beautify
+  Beautify --> Export[Export to file]
+  Export --> Share((Optional share link))
