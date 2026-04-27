@@ -1,6 +1,13 @@
 ---
 name: beauty-diagram
 description: Use when the user asks for a presentation-ready Mermaid / PlantUML diagram (e.g. "beautify this flowchart", "make this look like a deck slide", "produce an SVG of this architecture"), or wants a public share link for a diagram. This skill teaches you to call the Beauty Diagram CLI (`bd`) — never to hand-author SVG when a source diagram exists.
+version: 1.0.0
+metadata:
+  openclaw:
+    requires:
+      bins:
+        - node
+        - npx
 ---
 
 # Beauty Diagram skill
