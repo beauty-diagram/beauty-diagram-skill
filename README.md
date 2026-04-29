@@ -10,9 +10,11 @@ leaving the conversation.
 
 - Beautifies existing Mermaid / PlantUML files into polished SVG/PNG
 - Renders model-generated diagram source on demand
+- **Generates a diagram from a text prompt** via `bd ai generate`
+  (Pro / Premium plans only)
 - Produces shareable `https://www.beauty-diagram.com/s/...` links
-- Surfaces actionable error codes (`quota_exhausted`, `parse_failed`, …)
-  instead of silently retrying
+- Surfaces actionable error codes (`quota_exhausted`, `parse_failed`,
+  `prompt_injection`, …) instead of silently retrying
 
 ## Requirements
 
@@ -20,6 +22,8 @@ leaving the conversation.
 - **Optional**: a Beauty Diagram API key for unwatermarked output, share
   links, and higher quotas — anonymous demo mode works out of the box
   (1 export per IP per 24h)
+- **For AI generation**: an API key with the `ai:write` scope on a Pro
+  or Premium plan. Anonymous and free plans cannot call `bd ai generate`.
 
 Get a key at <https://www.beauty-diagram.com/account/api-keys>.
 
@@ -30,6 +34,7 @@ The skill activates when a user asks for things like:
 - "beautify this flowchart"
 - "make this Mermaid diagram look like a deck slide"
 - "give me an SVG of this architecture"
+- "draw me a diagram of the signup flow"
 - "share this diagram as a link"
 
 ## Example
@@ -41,6 +46,15 @@ Agent (uses skill):
   $ bd beautify flow.mmd --theme modern --out flow.svg
   $ bd share flow.mmd --title "Service flow"
   → https://www.beauty-diagram.com/s/abc123
+```
+
+```
+You: Draw me a deploy pipeline diagram and beautify it.
+
+Agent (uses skill, Pro plan):
+  $ bd ai generate "deploy pipeline with build, test, staging, prod" --out deploy.mmd
+  $ bd beautify deploy.mmd --out deploy.svg
+  → wrote deploy.mmd (editable) + deploy.svg (presentation)
 ```
 
 See `examples/` for runnable diagram sources and `scripts/` for shell
@@ -56,7 +70,8 @@ beauty-diagram-skill/
 │   └── sequence.mmd
 └── scripts/          # copy-pasteable shell wrappers
     ├── beautify.sh
-    └── export.sh
+    ├── export.sh
+    └── ai-generate.sh   # prompt → .mmd → .svg
 ```
 
 ## Links
