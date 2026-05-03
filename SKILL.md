@@ -1,7 +1,7 @@
 ---
 name: beauty-diagram
-description: Use when the user asks for a presentation-ready Mermaid / PlantUML diagram (e.g. "beautify this flowchart", "make this look like a deck slide", "produce an SVG of this architecture"), wants AI to generate a diagram from a text description, or wants a public share link for a diagram. This skill teaches you to call the Beauty Diagram CLI (`bd`) — never to hand-author SVG when a source diagram exists.
-version: 1.1.0
+description: Use when the user asks for a presentation-ready Mermaid / PlantUML diagram (e.g. "beautify this flowchart", "make this look like a deck slide", "produce an SVG of this architecture"), wants AI to generate a diagram from a text description, wants a public share link for a diagram, wants to render every diagram file in a folder, or wants to render Mermaid / PlantUML fenced code blocks inside a Markdown file (README, docs) into images. This skill teaches you to call the Beauty Diagram CLI (`bd`) — never to hand-author SVG when a source diagram exists.
+version: 1.2.0
 metadata:
   openclaw:
     requires:
@@ -30,6 +30,14 @@ not exposed through `/v1/*`.)
 - The user wants to **share a diagram link** (e.g. paste into Slack / a doc).
 - The user has Mermaid in a repo (README, ADR, RFC) and wants to **export
   SVGs** alongside.
+- The user has a **directory full of diagram source files** and wants every one
+  of them rendered (e.g. "render all the .mmd files in docs/diagrams"). Use
+  `bd batch`.
+- The user wants their **Markdown files (README, ADR, blog post) to display the
+  diagrams inline** on GitHub / their static site, not just show the source
+  code block. Use `bd extract` — it renders each fenced block to a sidecar
+  SVG and injects an image reference. GitHub strips raw inline `<svg>`, so
+  this is the only embed that survives.
 
 ## When NOT to use
 
@@ -138,6 +146,23 @@ bd ai generate "deploy flow" | bd beautify - --out docs/deploy.svg
 
 # Check remaining AI / export quota before kicking off a batch.
 bd usage
+
+# Render every diagram file under a directory in parallel.
+# Recurses for .mmd / .puml / .plantuml / .pu; one /v1/export per file.
+# Default concurrency=4, default failure mode is continue-on-error.
+bd batch ./docs/diagrams --out-dir ./docs/svg --theme modern
+
+# Same idea but for a glob (quote it so the shell doesn't expand first).
+bd batch "src/**/*.mmd" --format png --concurrency 8
+
+# Render every ```mermaid / ```plantuml fenced block inside a Markdown file
+# to a sidecar SVG and inject an image reference right below the fence.
+# Idempotent: re-running skips unchanged blocks (content-hashed filenames).
+bd extract README.md
+bd extract docs/*.md --assets-dir ./img --concurrency 4
+
+# Preview what bd extract would change without writing.
+bd extract README.md --dry-run
 ```
 
 ## Privacy
@@ -162,6 +187,18 @@ for abuse / quality monitoring; the raw text is not retained.
   monthly AI quota. Confirm the user wants AI generation before running it.
 - ❌ Do NOT capture the SVG output of `bd ai generate` — the command outputs
   Mermaid source on stdout, not SVG. Pipe into `bd beautify -` to render.
+- ❌ Do NOT loop `bd export` N times in a shell `for` loop when the user has
+  many files. Use `bd batch <dir>` — it parallelizes and reports a summary,
+  with no extra server load (still one request per file).
+- ❌ Do NOT inject a raw `<svg>...</svg>` into a Markdown file to "embed" a
+  diagram. GitHub, GitLab, Obsidian (default), and most static-site
+  renderers strip inline SVG for safety. Use `bd extract <file>.md`, which
+  writes sidecar SVGs and injects `![](path)` references that actually
+  render.
+- ❌ Do NOT delete the marker comments (`<!-- bd:img hash=... -->` /
+  `<!-- /bd:img -->`) that `bd extract` injects. They are how it stays
+  idempotent — without them, the next run will append duplicate image
+  references instead of replacing the existing one.
 
 ## Troubleshooting
 
