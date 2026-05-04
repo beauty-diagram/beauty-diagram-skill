@@ -122,9 +122,9 @@ bd beautify docs/architecture.mmd --theme modern --out docs/architecture.svg
 # Same but treat output as a downloadable export (consumes export quota)
 bd export docs/architecture.mmd --out docs/architecture.svg
 
-# PNG export. --scale 1 works for everyone; 2 needs pro, 4 needs premium.
-# Higher scales than the plan cap are silently clamped (X-BD-Scale-Clamped).
-bd export docs/architecture.mmd --format png --scale 2 --out docs/architecture.png
+# PNG export. --quality standard works for everyone; high needs pro, max needs premium.
+# Higher tiers than the plan cap are silently clamped (X-BD-Scale-Clamped).
+bd export docs/architecture.mmd --format png --quality high --out docs/architecture.png
 
 # PlantUML works the same way; .puml / .plantuml / .pu auto-detected,
 # otherwise pass --source-format plantuml.
@@ -211,7 +211,7 @@ for abuse / quality monitoring; the raw text is not retained.
 | `quota_exhausted` | Plan limit hit (anon: 1 export/IP/24h; free: 3 exports/mo; pro: 100 exports + 100 AI gens/mo; premium: ∞ exports + 500 AI gens/mo) | Sign in, wait for reset, or upgrade — `hints` in the response body has the URLs |
 | `rate_limited` | Anonymous IP bucket full (20 `/v1/beautify` requests / minute) or AI per-key bucket (30 `/min`) | Sign in or wait |
 | `source_too_large` | Source > 100 KB | Split the diagram |
-| `output_too_large` | PNG raster exceeds 8192 px | Lower `--scale` or simplify |
+| `output_too_large` | PNG raster exceeds 8192 px | Lower `--quality` or simplify |
 | `prompt_injection` | AI prompt looked like an injection attempt | Rephrase as a plain diagram description ("a flowchart of …") |
 | `instruction_rejected` | AI judged the prompt was not about a diagram | Rephrase to describe a concrete diagram. Quota was NOT consumed |
 | `parse_failed_after_retry` | AI output was unparseable Mermaid even after one retry | Rephrase, or write Mermaid by hand. Quota was NOT consumed |
