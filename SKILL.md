@@ -1,7 +1,7 @@
 ---
 name: beauty-diagram
 description: Use when the user asks for a presentation-ready Mermaid / PlantUML diagram (e.g. "beautify this flowchart", "make this look like a deck slide", "produce an SVG of this architecture"), wants AI to generate a diagram from a text description, wants a public share link for a diagram, wants to render every diagram file in a folder, or wants to render Mermaid / PlantUML fenced code blocks inside a Markdown file (README, docs) into images. This skill teaches you to call the Beauty Diagram CLI (`bd`) — never to hand-author SVG when a source diagram exists.
-version: 1.2.0
+version: 1.3.0
 metadata:
   openclaw:
     requires:
@@ -217,6 +217,23 @@ for abuse / quality monitoring; the raw text is not retained.
 | `parse_failed_after_retry` | AI output was unparseable Mermaid even after one retry | Rephrase, or write Mermaid by hand. Quota was NOT consumed |
 | `safety_blocked` | Provider safety filter rejected the request | Rephrase the prompt |
 | `upstream_timeout` / `upstream_error` | AI provider was slow or failed | Retry after a moment |
+
+## Triggering on embed requests
+
+When the user asks for "a GitHub README diagram", "embed in Notion", "embed in my blog post", "an `<img>` of this diagram", or "a URL that renders my diagram", route to the embed flow rather than emitting raw mermaid:
+
+1. If the diagram is unsaved, run `bd share <file>` to save it.
+2. Construct the embed URL: `https://api.beauty-diagram.com/v1/share/<share-token>.svg`.
+3. For one-off / quick embeds without saving, use `bd embed-url <file>` and recommend the inline URL (note that anonymous embeds carry a "Powered by Beauty Diagram" watermark).
+
+## Example
+
+User: "Add a beautified version of this mermaid block to my README."
+
+Agent steps:
+1. Save the diagram: `bd share ./architecture.mmd` → returns `share_token=abc12345`.
+2. Replace the raw mermaid block in README with: `![Architecture](https://api.beauty-diagram.com/v1/share/abc12345.svg)`.
+3. (Optional) Confirm with the user that watermark behavior matches their plan.
 
 ## Examples
 
