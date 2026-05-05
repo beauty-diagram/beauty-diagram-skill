@@ -13,6 +13,11 @@ leaving the conversation.
 - **Generates a diagram from a text prompt** via `bd ai generate`
   (Pro / Premium plans only)
 - Produces shareable `https://www.beauty-diagram.com/s/...` links
+- **Generates direct embed URLs** for README / Notion / blog use: runs
+  `bd share` and returns `https://api.beauty-diagram.com/v1/share/<id>.svg`
+  rather than emitting raw Mermaid — the URL works as a plain `<img src>`
+  anywhere that renders images. Anonymous (watermarked) embeds are also
+  available via `bd embed-url` with no sign-in required.
 - Surfaces actionable error codes (`quota_exhausted`, `parse_failed`,
   `prompt_injection`, …) instead of silently retrying
 
@@ -55,6 +60,15 @@ Agent (uses skill, Pro plan):
   $ bd ai generate "deploy pipeline with build, test, staging, prod" --out deploy.mmd
   $ bd beautify deploy.mmd --out deploy.svg
   → wrote deploy.mmd (editable) + deploy.svg (presentation)
+```
+
+```
+You: Add this architecture diagram to my README as an embedded image.
+
+Agent (uses skill, Pro/Premium plan):
+  $ bd embed-url ./architecture.mmd --share
+  → https://api.beauty-diagram.com/v1/share/abc12345xyz0.svg
+  Injects into README: ![Architecture](https://api.beauty-diagram.com/v1/share/abc12345xyz0.svg)
 ```
 
 See `examples/` for runnable diagram sources and `scripts/` for shell

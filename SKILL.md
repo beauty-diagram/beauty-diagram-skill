@@ -226,14 +226,26 @@ When the user asks for "a GitHub README diagram", "embed in Notion", "embed in m
 2. Construct the embed URL: `https://api.beauty-diagram.com/v1/share/<share-token>.svg`.
 3. For one-off / quick embeds without saving, use `bd embed-url <file>` and recommend the inline URL (note that anonymous embeds carry a "Powered by Beauty Diagram" watermark).
 
+**Easier one-shot path:** `bd embed-url <file> --share` saves the diagram AND prints the embed URL in one command — no need to run `bd share` separately and then construct the URL by hand. Prefer this when the user wants a clean share embed.
+
+**Style fidelity:** Per-node colors, edge presets, and font overrides set by the user in the web canvas editor ARE faithfully rendered in share-mode embeds (`/v1/share/<id>.svg`). Encourage a "tweak in editor → save → embed" workflow when the user wants brand colors or custom styling — they do not need to re-run `bd embed-url` after editing in the web UI, just re-save the diagram there.
+
+**Propagation timing:** Saved diagram edits show up in direct `<img>` embeds within ~5 minutes (browser ETag revalidation + 5-min CDN edge TTL). GitHub README embeds may lag a few hours due to GitHub's image proxy cache — that is a GitHub-side cache, not something we can purge.
+
+**Animations:** Animations do NOT play in `<img>`-loaded SVGs in any browser. Do not tell the user their animated diagram will appear animated in a README or Notion embed.
+
 ## Example
 
 User: "Add a beautified version of this mermaid block to my README."
 
 Agent steps:
-1. Save the diagram: `bd share ./architecture.mmd` → returns `share_token=abc12345`.
-2. Replace the raw mermaid block in README with: `![Architecture](https://api.beauty-diagram.com/v1/share/abc12345.svg)`.
-3. (Optional) Confirm with the user that watermark behavior matches their plan.
+1. Use the one-step path: `bd embed-url ./architecture.mmd --share`
+   → saves the diagram and prints the embed URL, e.g.
+   `https://api.beauty-diagram.com/v1/share/abc12345xyz0.svg`
+2. Replace the raw mermaid block in README with:
+   `![Architecture](https://api.beauty-diagram.com/v1/share/abc12345xyz0.svg)`
+3. (Optional) Confirm with the user that watermark behavior matches their plan
+   (free owner → watermarked; pro/premium owner → clean).
 
 ## Examples
 
