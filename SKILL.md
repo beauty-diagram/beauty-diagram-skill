@@ -134,6 +134,14 @@ bd export docs/architecture.puml --out docs/architecture.svg
 bd share docs/architecture.mmd --title "Service architecture"
 # → prints the URL on stdout
 
+# Get an embeddable <img>-friendly URL for a diagram source.
+# Default: anonymous inline URL (always watermarked) + a hint about --share.
+bd embed-url docs/architecture.mmd --theme atlas
+# One-shot saved share embed (clean output for pro/premium owners).
+# Saves the diagram via /v1/share AND prints the embed URL in one step.
+bd embed-url docs/architecture.mmd --share
+# → prints https://api.beauty-diagram.com/v1/share/<token>.svg
+
 # AI: generate a diagram from a text prompt. Output is Mermaid source —
 # always write to a file so the user can iterate. Paid-only.
 bd ai generate "user signup with email verification" --out docs/signup.mmd
