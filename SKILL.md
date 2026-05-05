@@ -1,7 +1,7 @@
 ---
 name: beauty-diagram
 description: Use when the user asks for a presentation-ready Mermaid / PlantUML diagram (e.g. "beautify this flowchart", "make this look like a deck slide", "produce an SVG of this architecture"), wants AI to generate a diagram from a text description, wants a public share link for a diagram, wants to render every diagram file in a folder, or wants to render Mermaid / PlantUML fenced code blocks inside a Markdown file (README, docs) into images. This skill teaches you to call the Beauty Diagram CLI (`bd`) — never to hand-author SVG when a source diagram exists.
-version: 1.3.0
+version: 1.4.0
 metadata:
   openclaw:
     requires:
@@ -35,9 +35,11 @@ not exposed through `/v1/*`.)
   `bd batch`.
 - The user wants their **Markdown files (README, ADR, blog post) to display the
   diagrams inline** on GitHub / their static site, not just show the source
-  code block. Use `bd extract` — it renders each fenced block to a sidecar
-  SVG and injects an image reference. GitHub strips raw inline `<svg>`, so
-  this is the only embed that survives.
+  code block. Use `bd extract` — by default it injects inline embed URLs
+  (no API calls, no files, anonymous-watermarked) after each fenced block.
+  Pass `--assets-dir ./img` to write local SVG files instead (sidecar mode,
+  Pro/Premium get watermark-free output). GitHub strips raw inline `<svg>`, so
+  either mode's `![](...)` reference is the correct embed strategy.
 
 ## When NOT to use
 
@@ -163,10 +165,12 @@ bd batch ./docs/diagrams --out-dir ./docs/svg --theme modern
 # Same idea but for a glob (quote it so the shell doesn't expand first).
 bd batch "src/**/*.mmd" --format png --concurrency 8
 
-# Render every ```mermaid / ```plantuml fenced block inside a Markdown file
-# to a sidecar SVG and inject an image reference right below the fence.
-# Idempotent: re-running skips unchanged blocks (content-hashed filenames).
+# Default: inline embed URLs (no files written, anonymous-watermarked, 5 KB/block cap).
+# No API calls during extract — source encoded in the URL; browser fetches on demand.
 bd extract README.md
+
+# Sidecar mode: writes local SVG files via /v1/export.
+# Pro/Premium plans get watermark-free output; consumes export quota.
 bd extract docs/*.md --assets-dir ./img --concurrency 4
 
 # Preview what bd extract would change without writing.
@@ -203,10 +207,11 @@ for abuse / quality monitoring; the raw text is not retained.
   renderers strip inline SVG for safety. Use `bd extract <file>.md`, which
   writes sidecar SVGs and injects `![](path)` references that actually
   render.
-- ❌ Do NOT delete the marker comments (`<!-- bd:img hash=... -->` /
-  `<!-- /bd:img -->`) that `bd extract` injects. They are how it stays
-  idempotent — without them, the next run will append duplicate image
-  references instead of replacing the existing one.
+- ❌ Do NOT delete the marker comments that `bd extract` injects. Inline mode
+  uses `<!-- bd:inline-img hash=... -->` / `<!-- /bd:inline-img -->`;
+  sidecar mode uses `<!-- bd:img hash=... -->` / `<!-- /bd:img -->`.
+  They are how `bd extract` stays idempotent — without them, the next run
+  will append duplicate image references instead of replacing the existing one.
 
 ## Troubleshooting
 
