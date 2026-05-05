@@ -247,6 +247,8 @@ When the user asks for "a GitHub README diagram", "embed in Notion", "embed in m
 
 **Animations:** Animations do NOT play in `<img>`-loaded SVGs in any browser. Do not tell the user their animated diagram will appear animated in a README or Notion embed.
 
+**Slack / Discord / Twitter / iMessage previews**: share links (`https://www.beauty-diagram.com/s/<slug>`) auto-unfurl with a diagram thumbnail card on these platforms — no need to manually attach a screenshot. The OG image is generated server-side from the diagram itself.
+
 ## Example
 
 User: "Add a beautified version of this mermaid block to my README."
