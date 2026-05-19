@@ -1,7 +1,7 @@
 ---
 name: beauty-diagram
 description: Use when the user asks for a presentation-ready Mermaid / PlantUML diagram (e.g. "beautify this flowchart", "make this look like a deck slide", "produce an SVG of this architecture"), wants AI to generate a diagram from a text description, wants a public share link for a diagram, wants to render every diagram file in a folder, or wants to render Mermaid / PlantUML fenced code blocks inside a Markdown file (README, docs) into images. This skill teaches you to call the Beauty Diagram CLI (`bd`) — never to hand-author SVG when a source diagram exists.
-version: 1.4.0
+version: 1.5.0
 metadata:
   openclaw:
     requires:
@@ -115,6 +115,30 @@ or pricing — don't silently retry. Anonymous error bodies include a
 `hints` block with absolute `signUpUrl` / `signInUrl` / `apiDocsUrl`,
 which is the canonical place to surface to the user.
 
+## Themes & tiers
+
+`--theme` selects the visual style. Themes are tier-gated on **export-side
+endpoints** (`bd export`, `bd share`, `bd embed-url --share`,
+`bd batch`, sidecar mode of `bd extract`). `bd beautify` is preview-only
+and is NOT gated — any theme is allowed there. If the request specifies
+a theme above the token's plan, the server returns
+`theme_tier_required` (HTTP 403).
+
+| Tier | Themes |
+|---|---|
+| Free | `classic`, `modern`, `slate` |
+| Pro | + `atlas`, `obsidian`, `brutalist`, `atelier` |
+| Premium | + `blueprint`, `memphis` |
+
+When the user's plan is unknown, default to `modern` (Free, broadly
+slide-friendly). Run `bd themes` to introspect what the current token
+can use — locked themes are marked with `✗`. Premium signature themes
+(`blueprint`, `memphis`) are subscriber-only and cannot be unlocked
+with credit packs.
+
+Animations are not currently selectable via the CLI — animation choice
+is a web-editor concept; CLI export paths ignore animation.
+
 ## Commands cheat sheet
 
 ```bash
@@ -220,6 +244,7 @@ for abuse / quality monitoring; the raw text is not retained.
 | `not_authenticated` | No key, no session | `bd auth login` |
 | `scope_missing` | Key lacks scope (e.g. `ai:write` for `bd ai generate`) | Recreate key with required scope at `/account/api-keys` |
 | `plan_not_allowed` | Plan does not include this capability (AI is Pro / Premium only) | Upgrade or skip the call |
+| `theme_tier_required` | Selected `--theme` requires a higher plan tier than the token has (e.g. free token requesting `atelier`) | Pick a theme the token can use (run `bd themes`), or upgrade. See **Themes & tiers** above for the per-tier breakdown |
 | `parse_failed` | Source not valid Mermaid / PlantUML | Check the source — `bd beautify` will surface a parse error too |
 | `quota_exhausted` | Plan limit hit (anon: 1 export/IP/24h; free: 3 exports/mo; pro: 100 exports + 100 AI gens/mo; premium: ∞ exports + 500 AI gens/mo) | Sign in, wait for reset, or upgrade — `hints` in the response body has the URLs |
 | `rate_limited` | Anonymous IP bucket full (20 `/v1/beautify` requests / minute) or AI per-key bucket (30 `/min`) | Sign in or wait |
