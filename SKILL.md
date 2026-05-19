@@ -117,12 +117,17 @@ which is the canonical place to surface to the user.
 
 ## Themes & tiers
 
-`--theme` selects the visual style. Themes are tier-gated on **export-side
-endpoints** (`bd export`, `bd share`, `bd embed-url --share`,
-`bd batch`, sidecar mode of `bd extract`). `bd beautify` is preview-only
-and is NOT gated — any theme is allowed there. If the request specifies
-a theme above the token's plan, the server returns
-`theme_tier_required` (HTTP 403).
+`--theme` selects the visual style. Theme tier is enforced on **all `bd`
+commands that hit a `/v1/*` endpoint with a PAT** — this includes
+`bd beautify`, `bd export`, `bd share`, `bd embed-url --share`,
+`bd batch`, and sidecar mode of `bd extract`. If the request includes a
+PAT and specifies a theme above that token's plan tier, the server returns
+HTTP 403 `theme_tier_required`.
+
+The only path that bypasses the tier check is the **anonymous fallback**
+(no token, or the `GET /v1/beautify.svg` inline embed endpoint). Anonymous
+callers may request any theme, but always receive watermarked output — there
+is no tier-free, watermark-free path.
 
 | Tier | Themes |
 |---|---|
@@ -273,6 +278,8 @@ When the user asks for "a GitHub README diagram", "embed in Notion", "embed in m
 **Animations:** Animations do NOT play in `<img>`-loaded SVGs in any browser. Do not tell the user their animated diagram will appear animated in a README or Notion embed.
 
 **Slack / Discord / Twitter / iMessage previews**: share links (`https://www.beauty-diagram.com/s/<slug>`) auto-unfurl with a diagram thumbnail card on these platforms — no need to manually attach a screenshot. The OG image is generated server-side from the diagram itself.
+
+**Owner-tier fallback on embed URLs**: if the share's owner downgraded their plan AFTER saving the diagram (e.g. saved with Atelier on Pro, then downgraded to Free), `GET /v1/share/<id>.svg` returns a 200 response with a brand-fallback SVG instead of the real content. Embeds must stay 200 for `<img>`-mounted unfurls to render at all, so 403 is not used here. The owner can restore the original render by re-upgrading or switching to a free-tier theme and re-saving.
 
 ## Example
 
