@@ -1,6 +1,6 @@
 # Beauty Diagram skill
 
-Turn Mermaid / PlantUML source into presentation-ready SVG or PNG — straight
+Turn Mermaid / PlantUML source into sleek, modern SVG or PNG — straight
 from your agent. This skill teaches Claude (or any compatible agent) to call
 the [`bd` CLI](https://www.npmjs.com/package/@beauty-diagram/cli) instead of
 hand-authoring SVG, so you get consistent, slide-quality diagrams without

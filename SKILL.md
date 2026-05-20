@@ -1,6 +1,6 @@
 ---
 name: beauty-diagram
-description: Use when the user asks for a presentation-ready Mermaid / PlantUML diagram (e.g. "beautify this flowchart", "make this look like a deck slide", "produce an SVG of this architecture"), wants AI to generate a diagram from a text description, wants a public share link for a diagram, wants to render every diagram file in a folder, or wants to render Mermaid / PlantUML fenced code blocks inside a Markdown file (README, docs) into images. This skill teaches you to call the Beauty Diagram CLI (`bd`) — never to hand-author SVG when a source diagram exists.
+description: Use when the user asks for a sleek, modern Mermaid / PlantUML diagram (e.g. "beautify this flowchart", "make this look like a deck slide", "produce an SVG of this architecture"), wants AI to generate a diagram from a text description, wants a public share link for a diagram, wants to render every diagram file in a folder, or wants to render Mermaid / PlantUML fenced code blocks inside a Markdown file (README, docs) into images. This skill teaches you to call the Beauty Diagram CLI (`bd`) — never to hand-author SVG when a source diagram exists.
 version: 1.5.0
 metadata:
   openclaw:
@@ -13,7 +13,7 @@ metadata:
 # Beauty Diagram skill
 
 Beauty Diagram beautifies Mermaid / PlantUML diagrams into
-presentation-ready SVG or PNG. It runs as a public API; this skill
+sleek, modern SVG or PNG. It runs as a public API; this skill
 delegates to the `bd` CLI (npm package `@beauty-diagram/cli`) so you
 keep zero state in the agent. (draw.io / SVG import is editor-only —
 not exposed through `/v1/*`.)
