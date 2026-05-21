@@ -154,7 +154,7 @@ degradation — the source still renders, just without the directive).
 **Mermaid** — use `%%` comment syntax:
 
 ```
-%% bd:theme=memphis
+%% bd:theme=classic
 %% bd:bg=transparent
 flowchart LR
   A --> B
@@ -163,7 +163,7 @@ flowchart LR
 **PlantUML** — use `'` comment syntax:
 
 ```
-' bd:theme=memphis
+' bd:theme=classic
 ' bd:bg=transparent
 @startuml
 A -> B

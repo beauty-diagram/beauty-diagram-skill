@@ -87,7 +87,7 @@ degradation at no cost.
 **Mermaid** — one directive per `%%` comment line:
 
 ```
-%% bd:theme=memphis
+%% bd:theme=classic
 %% bd:bg=transparent
 flowchart LR
   A --> B
@@ -96,7 +96,7 @@ flowchart LR
 **PlantUML** — one directive per `'` comment line:
 
 ```
-' bd:theme=memphis
+' bd:theme=classic
 ' bd:bg=transparent
 @startuml
 A -> B
@@ -124,7 +124,7 @@ Theme tiers: **Free** — `classic`, `modern`, `slate`; **Pro** — adds `atlas`
 CLI flag  >  source directive  >  server default
 ```
 
-A `--theme atlas` flag always wins over a `%% bd:theme=memphis` directive in
+A `--theme atlas` flag always wins over a `%% bd:theme=classic` directive in
 the source. Directives are useful when the file is the single source of truth
 (shared repos, Obsidian vaults) and the CLI flags aren't part of the workflow.
 
