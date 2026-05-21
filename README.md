@@ -74,6 +74,69 @@ Agent (uses skill, Pro/Premium plan):
 See `examples/` for runnable diagram sources and `scripts/` for shell
 wrappers you can drop into a repo.
 
+## Source-level directives
+
+Both the `bd` CLI and the Obsidian plugin support `bd:KEY=VALUE` directives
+embedded at the **start of your diagram source** as native comments. The API
+server does not parse them, but because they are valid comment syntax for both
+Mermaid and PlantUML, the source renders normally everywhere — graceful
+degradation at no cost.
+
+### Grammar
+
+**Mermaid** — one directive per `%%` comment line:
+
+```
+%% bd:theme=memphis
+%% bd:bg=transparent
+flowchart LR
+  A --> B
+```
+
+**PlantUML** — one directive per `'` comment line:
+
+```
+' bd:theme=memphis
+' bd:bg=transparent
+@startuml
+A -> B
+@enduml
+```
+
+Rules:
+- All `bd:` lines must appear **before the first non-blank, non-directive line**.
+- Blank lines between directives are tolerated.
+- Multiple directives stack — both `theme` and `bg` can be set together.
+
+### Supported keys
+
+| Key | Accepted values | Notes |
+|---|---|---|
+| `theme` | `classic`, `modern`, `slate`, `atlas`, `obsidian`, `brutalist`, `atelier`, `blueprint`, `memphis` | Overrides the render theme. Tier gating still applies — anonymous callers get watermarked output regardless of theme. |
+| `bg` | `transparent` | Renders with a transparent canvas. Useful for overlaying on colored slide backgrounds. Any other value is silently ignored. |
+
+Theme tiers: **Free** — `classic`, `modern`, `slate`; **Pro** — adds `atlas`,
+`obsidian`, `brutalist`, `atelier`; **Premium** — adds `blueprint`, `memphis`.
+
+### Override priority
+
+```
+CLI flag  >  source directive  >  server default
+```
+
+A `--theme atlas` flag always wins over a `%% bd:theme=memphis` directive in
+the source. Directives are useful when the file is the single source of truth
+(shared repos, Obsidian vaults) and the CLI flags aren't part of the workflow.
+
+### Why use directives instead of CLI flags?
+
+- The theme intent **travels with the file** — anyone who opens the `.mmd` in
+  the Obsidian plugin, or runs `bd beautify` without `--theme`, still gets the
+  right style.
+- Works transparently in the Obsidian plugin, where there is no CLI invocation.
+- Directives are stripped before the source reaches the renderer — they do not
+  appear in the SVG output.
+
 ## Files
 
 ```

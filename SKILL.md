@@ -144,6 +144,53 @@ with credit packs.
 Animations are not currently selectable via the CLI — animation choice
 is a web-editor concept; CLI export paths ignore animation.
 
+## Source-level directives
+
+Instead of (or in addition to) CLI flags, you can embed `bd:` directives at
+the **very top** of the source file. Both the `bd` CLI and the Obsidian plugin
+parse them; the API server ignores them as native comments (graceful
+degradation — the source still renders, just without the directive).
+
+**Mermaid** — use `%%` comment syntax:
+
+```
+%% bd:theme=memphis
+%% bd:bg=transparent
+flowchart LR
+  A --> B
+```
+
+**PlantUML** — use `'` comment syntax:
+
+```
+' bd:theme=memphis
+' bd:bg=transparent
+@startuml
+A -> B
+@enduml
+```
+
+Supported keys:
+
+| Key | Values | Effect |
+|---|---|---|
+| `theme` | `classic modern slate atlas obsidian brutalist atelier blueprint memphis` | Override render theme. Tier gating still applies. |
+| `bg` | `transparent` | Transparent canvas. Other values are ignored. |
+
+Multiple directives stack, one per line. Blank lines between directives are
+tolerated. The first non-directive non-blank line ends the directive block.
+
+**Override priority:** CLI flag > source directive > server default.
+
+When generating source for the user, prefer directives over CLI flags when:
+- The source file will be re-used (Obsidian vault, shared repo) — the
+  directive travels with the file.
+- The user asks for a "memphis theme" diagram without CLI context (write
+  `%% bd:theme=memphis` at the top of the `.mmd` file).
+
+Directives are stripped before the source reaches the renderer — they do not
+appear in the SVG output.
+
 ## Commands cheat sheet
 
 ```bash
