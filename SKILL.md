@@ -1,7 +1,7 @@
 ---
 name: beauty-diagram
 description: Use when the user asks for a sleek, modern Mermaid / PlantUML diagram (e.g. "beautify this flowchart", "make this look like a deck slide", "produce an SVG of this architecture"), wants AI to generate a diagram from a text description, wants a public share link for a diagram, wants to render every diagram file in a folder, or wants to render Mermaid / PlantUML fenced code blocks inside a Markdown file (README, docs) into images. This skill teaches you to call the Beauty Diagram CLI (`bd`) — never to hand-author SVG when a source diagram exists.
-version: 1.5.0
+version: 1.6.0
 metadata:
   openclaw:
     requires:
@@ -35,11 +35,18 @@ not exposed through `/v1/*`.)
   `bd batch`.
 - The user wants their **Markdown files (README, ADR, blog post) to display the
   diagrams inline** on GitHub / their static site, not just show the source
-  code block. Use `bd extract` — by default it injects inline embed URLs
-  (no API calls, no files, anonymous-watermarked) after each fenced block.
-  Pass `--assets-dir ./img` to write local SVG files instead (sidecar mode,
-  Pro/Premium get watermark-free output). GitHub strips raw inline `<svg>`, so
-  either mode's `![](...)` reference is the correct embed strategy.
+  code block. Use `bd extract` — three modes available:
+  - **Default (inline)**: no flags. Injects `/v1/beautify.svg?source=...` URLs
+    after each fence. No API calls during extract, no files written, no quota
+    consumed. Always watermarked (anonymous endpoint).
+  - **Share (`--share`)**: mints a `/v1/share/<token>.svg` URL per unique fence.
+    **Watermark-free for Pro/Premium**. Requires an API key. Each unique
+    source consumes 1 share quota the first time; identical fences are
+    deduplicated; per-owner local cache means re-runs cost zero quota.
+  - **Sidecar (`--assets-dir ./img`)**: writes local SVG files via `/v1/export`.
+    Watermark-free for Pro/Premium, consumes export quota.
+  GitHub strips raw inline `<svg>`, so any of these modes' `![](...)`
+  reference is the correct embed strategy.
 
 ## When NOT to use
 
@@ -120,7 +127,7 @@ which is the canonical place to surface to the user.
 `--theme` selects the visual style. Theme tier is enforced on **all `bd`
 commands that hit a `/v1/*` endpoint with a PAT** — this includes
 `bd beautify`, `bd export`, `bd share`, `bd embed-url --share`,
-`bd batch`, and sidecar mode of `bd extract`. If the request includes a
+`bd batch`, `bd extract --share`, and sidecar mode of `bd extract`. If the request includes a
 PAT and specifies a theme above that token's plan tier, the server returns
 HTTP 403 `theme_tier_required`.
 
@@ -245,6 +252,13 @@ bd batch "src/**/*.mmd" --format png --concurrency 8
 # No API calls during extract — source encoded in the URL; browser fetches on demand.
 bd extract README.md
 
+# Share mode: mint /v1/share/<token>.svg per fence. Watermark-free for Pro/Premium.
+# 1 share quota per unique source (cached locally; re-runs free). No 5 KB cap.
+# Requires API key. Default keeps existing share tokens across re-runs;
+# use --re-mint to force fresh tokens (e.g. collaborator taking ownership).
+bd extract README.md --share
+bd extract README.md --share --re-mint
+
 # Sidecar mode: writes local SVG files via /v1/export.
 # Pro/Premium plans get watermark-free output; consumes export quota.
 bd extract docs/*.md --assets-dir ./img --concurrency 4
@@ -284,8 +298,9 @@ for abuse / quality monitoring; the raw text is not retained.
   writes sidecar SVGs and injects `![](path)` references that actually
   render.
 - ❌ Do NOT delete the marker comments that `bd extract` injects. Inline mode
-  uses `<!-- bd:inline-img hash=... -->` / `<!-- /bd:inline-img -->`;
-  sidecar mode uses `<!-- bd:img hash=... -->` / `<!-- /bd:img -->`.
+  uses `<!-- bd:inline-img hash=... -->` / `<!-- /bd:inline-img -->` (with
+  an extra ` share=true` attribute in share mode); sidecar mode uses
+  `<!-- bd:img hash=... -->` / `<!-- /bd:img -->`.
   They are how `bd extract` stays idempotent — without them, the next run
   will append duplicate image references instead of replacing the existing one.
 
